@@ -27,6 +27,9 @@
   --link-bg-hover: rgba(255, 255, 255, 0.9);
   --hero-a: rgba(79, 184, 178, 0.36);
   --hero-b: rgba(47, 106, 74, 0.2);
+  --danger: #9f3030;
+  --danger-surface: rgba(196, 71, 71, 0.1);
+  --danger-line: rgba(196, 71, 71, 0.32);
 }
 
 :root[data-theme="dark"] {
@@ -49,6 +52,9 @@
   --link-bg-hover: rgba(24, 44, 49, 0.8);
   --hero-a: rgba(96, 215, 207, 0.18);
   --hero-b: rgba(110, 200, 154, 0.12);
+  --danger: #ff9b9b;
+  --danger-surface: rgba(196, 71, 71, 0.18);
+  --danger-line: rgba(255, 155, 155, 0.38);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -72,6 +78,9 @@
     --link-bg-hover: rgba(24, 44, 49, 0.8);
     --hero-a: rgba(96, 215, 207, 0.18);
     --hero-b: rgba(110, 200, 154, 0.12);
+    --danger: #ff9b9b;
+    --danger-surface: rgba(196, 71, 71, 0.18);
+    --danger-line: rgba(255, 155, 155, 0.38);
   }
 }
 
