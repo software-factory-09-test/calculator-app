@@ -4,6 +4,7 @@ import {
   KEYBOARD_MAP,
   initialState,
   reduce,
+  screenText,
 } from '../lib/calculator'
 import type { CalculatorKeyKind } from '../lib/calculator'
 
@@ -26,6 +27,7 @@ function buttonClasses(kind: CalculatorKeyKind): string {
 export default function Calculator() {
   const [state, dispatch] = useReducer(reduce, initialState)
   const isError = state.status === 'error'
+  const text = screenText(state)
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -43,7 +45,7 @@ export default function Calculator() {
   }, [])
 
   const displayClasses = [
-    'display-title flex min-h-[4rem] items-center justify-end overflow-hidden rounded-2xl border px-4 py-3 text-right text-3xl font-bold tracking-tight sm:min-h-[4.5rem] sm:text-4xl',
+    'display-title flex min-h-[4rem] items-center justify-end overflow-hidden rounded-2xl border px-4 py-3 text-right text-2xl font-bold tracking-tight sm:min-h-[4.5rem] sm:text-3xl',
     isError
       ? 'border-[var(--danger-line)] bg-[var(--danger-surface)] text-[var(--danger)]'
       : 'border-[var(--line)] bg-[var(--chip-bg)] text-[var(--sea-ink)]',
@@ -59,8 +61,9 @@ export default function Calculator() {
         aria-live="polite"
         data-testid="calculator-display"
         className={displayClasses}
+        title={text}
       >
-        <span className="w-full truncate">{state.display}</span>
+        <span className="w-full truncate whitespace-nowrap">{text}</span>
       </div>
 
       <div className="mt-4 grid grid-cols-4 gap-2 sm:mt-6 sm:gap-3">

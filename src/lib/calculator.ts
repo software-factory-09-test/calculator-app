@@ -14,6 +14,8 @@ export type CalculatorStatus = 'idle' | 'running' | 'complete' | 'error'
 export interface CalculatorState {
   /** The string currently shown on the display. */
   display: string
+  /** Committed text of the left operand, used to render the full expression. */
+  leftText: string | null
   /** Stored left-hand operand for a pending operation. */
   accumulator: number | null
   /** Pending operator, if any. */
@@ -36,10 +38,33 @@ export type CalculatorAction =
 
 export const initialState: CalculatorState = {
   display: '0',
+  leftText: null,
   accumulator: null,
   operator: null,
   status: 'idle',
   overwrite: true,
+}
+
+/** Operator glyphs mirroring the on-screen button labels. */
+const OPERATOR_LABELS: Record<CalculatorOperator, string> = {
+  '+': '+',
+  '-': '−',
+  '×': '×',
+  '÷': '÷',
+}
+
+/**
+ * Compose the text the display should show. While an operation is pending this
+ * is the full expression (`3 + 5`); otherwise it is just the current operand or
+ * result. Pure selector so the view stays a thin projection of the state.
+ */
+export function screenText(state: CalculatorState): string {
+  if (state.operator === null || state.leftText === null) {
+    return state.display
+  }
+
+  const left = `${state.leftText} ${OPERATOR_LABELS[state.operator]}`
+  return state.overwrite ? left : `${left} ${state.display}`
 }
 
 /** Significant digits kept when rendering a result to avoid float noise. */
@@ -135,6 +160,7 @@ function inputOperator(
 
     return {
       display: formatDisplay(result),
+      leftText: formatDisplay(result),
       accumulator: result,
       operator,
       status: 'running',
@@ -149,6 +175,7 @@ function inputOperator(
 
   return {
     ...state,
+    leftText: state.display,
     accumulator,
     operator,
     status: 'running',
@@ -158,7 +185,7 @@ function inputOperator(
 
 function inputEquals(state: CalculatorState): CalculatorState {
   if (state.accumulator === null || state.operator === null) {
-    return { ...state, status: 'complete', overwrite: true }
+    return { ...state, leftText: null, status: 'complete', overwrite: true }
   }
 
   const result = evaluate(state.accumulator, state.operator, Number(state.display))
@@ -169,6 +196,7 @@ function inputEquals(state: CalculatorState): CalculatorState {
 
   return {
     display: formatDisplay(result),
+    leftText: null,
     accumulator: null,
     operator: null,
     status: 'complete',

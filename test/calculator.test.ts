@@ -8,6 +8,7 @@ import {
   formatDisplay,
   initialState,
   reduce,
+  screenText,
 } from '#/lib/calculator.ts'
 import type {
   CalculatorAction,
@@ -139,6 +140,53 @@ test('formatDisplay removes floating-point noise', () => {
   assert.equal(formatDisplay(1 / 3), '0.333333333333')
   assert.equal(formatDisplay(Number.POSITIVE_INFINITY), 'Error')
   assert.equal(formatDisplay(Number.NaN), 'Error')
+})
+
+test('screenText shows the full pending expression', () => {
+  assert.equal(screenText(initialState), '0')
+  assert.equal(screenText(run([digit('3')])), '3')
+  assert.equal(screenText(run([digit('3'), operator('+')])), '3 +')
+  assert.equal(screenText(run([digit('3'), operator('+'), digit('5')])), '3 + 5')
+  assert.equal(
+    screenText(run([digit('3'), operator('+'), digit('5'), { type: 'equals' }])),
+    '8',
+  )
+})
+
+test('screenText reflects chaining, decimals, glyphs and backspace', () => {
+  assert.equal(
+    screenText(run([digit('2'), operator('+'), digit('3'), operator('×')])),
+    '5 ×',
+  )
+  assert.equal(
+    screenText(run([digit('3'), operator('+'), { type: 'decimal' }])),
+    '3 + 0.',
+  )
+  assert.equal(
+    screenText(run([digit('7'), operator('-'), digit('2')])),
+    '7 − 2',
+  )
+  assert.equal(
+    screenText(
+      run([digit('3'), operator('+'), digit('5'), { type: 'backspace' }]),
+    ),
+    '3 + 0',
+  )
+})
+
+test('screenText collapses to the sentinel and resets on clear', () => {
+  assert.equal(
+    screenText(
+      run([digit('1'), operator('÷'), digit('0'), { type: 'equals' }]),
+    ),
+    'Error',
+  )
+  assert.equal(
+    screenText(
+      run([digit('9'), operator('+'), digit('1'), { type: 'clear' }]),
+    ),
+    '0',
+  )
 })
 
 test('reduce is pure and never mutates the input state', () => {
