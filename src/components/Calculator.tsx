@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react'
+import { useEffect, useReducer, useRef } from 'react'
 import {
   CALCULATOR_KEYS,
   KEYBOARD_MAP,
@@ -28,6 +28,16 @@ export default function Calculator() {
   const [state, dispatch] = useReducer(reduce, initialState)
   const isError = state.status === 'error'
   const text = screenText(state)
+  const displayRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Keep the newest tokens in view as the expression grows longer than the
+    // display; without this the left edge stays scrolled in and hides them.
+    const node = displayRef.current
+    if (node) {
+      node.scrollLeft = node.scrollWidth
+    }
+  }, [text])
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -45,7 +55,7 @@ export default function Calculator() {
   }, [])
 
   const displayClasses = [
-    'display-title flex min-h-[4rem] items-center justify-end overflow-hidden rounded-2xl border px-4 py-3 text-right text-2xl font-bold tracking-tight sm:min-h-[4.5rem] sm:text-3xl',
+    'display-title flex min-h-[4rem] items-center justify-end overflow-x-auto rounded-2xl border px-4 py-3 text-right text-2xl font-bold tracking-tight sm:min-h-[4.5rem] sm:text-3xl',
     isError
       ? 'border-[var(--danger-line)] bg-[var(--danger-surface)] text-[var(--danger)]'
       : 'border-[var(--line)] bg-[var(--chip-bg)] text-[var(--sea-ink)]',
@@ -57,13 +67,14 @@ export default function Calculator() {
       aria-label="Calculator"
     >
       <div
+        ref={displayRef}
         role="status"
         aria-live="polite"
         data-testid="calculator-display"
         className={displayClasses}
         title={text}
       >
-        <span className="w-full truncate whitespace-nowrap">{text}</span>
+        <span className="ml-auto whitespace-nowrap">{text}</span>
       </div>
 
       <div className="mt-4 grid grid-cols-4 gap-2 sm:mt-6 sm:gap-3">

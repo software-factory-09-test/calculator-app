@@ -45,7 +45,7 @@ test('adds two operands on equals', () => {
 
 test('chains operators by evaluating the pending operation', () => {
   const interim = run([digit('2'), operator('+'), digit('3'), operator('×')])
-  assert.equal(interim.display, '5')
+  assert.equal(screenText(interim), '2 + 3 ×')
   assert.equal(interim.status, 'running')
   assert.equal(interim.operator, '×')
 
@@ -153,10 +153,55 @@ test('screenText shows the full pending expression', () => {
   )
 })
 
+test('chained operators build the full expression without auto-evaluating', () => {
+  const chained = run([
+    digit('1'),
+    operator('+'),
+    digit('2'),
+    operator('+'),
+    digit('3'),
+  ])
+  assert.equal(screenText(chained), '1 + 2 + 3')
+  assert.equal(chained.status, 'running')
+  assert.equal(chained.display, '3')
+
+  const resolved = run([
+    digit('1'),
+    operator('+'),
+    digit('2'),
+    operator('+'),
+    digit('3'),
+    { type: 'equals' },
+  ])
+  assert.equal(resolved.display, '6')
+
+  const fourOperands = run([
+    digit('1'),
+    operator('+'),
+    digit('2'),
+    operator('+'),
+    digit('3'),
+    operator('+'),
+    digit('4'),
+    { type: 'equals' },
+  ])
+  assert.equal(fourOperands.display, '10')
+
+  const mixed = run([
+    digit('1'),
+    operator('+'),
+    digit('2'),
+    operator('×'),
+    digit('3'),
+    { type: 'equals' },
+  ])
+  assert.equal(mixed.display, '9')
+})
+
 test('screenText reflects chaining, decimals, glyphs and backspace', () => {
   assert.equal(
     screenText(run([digit('2'), operator('+'), digit('3'), operator('×')])),
-    '5 ×',
+    '2 + 3 ×',
   )
   assert.equal(
     screenText(run([digit('3'), operator('+'), { type: 'decimal' }])),

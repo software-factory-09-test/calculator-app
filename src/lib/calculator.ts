@@ -14,7 +14,10 @@ export type CalculatorStatus = 'idle' | 'running' | 'complete' | 'error'
 export interface CalculatorState {
   /** The string currently shown on the display. */
   display: string
-  /** Committed text of the left operand, used to render the full expression. */
+  /**
+   * Accumulated committed expression text (e.g. `"1 + 2"`), rendered verbatim
+   * by `screenText()` before the pending operator glyph.
+   */
   leftText: string | null
   /** Stored left-hand operand for a pending operation. */
   accumulator: number | null
@@ -158,9 +161,16 @@ function inputOperator(
       return errorState()
     }
 
+    // Accumulate the growing expression instead of collapsing to the result so
+    // the display keeps showing `num1 + num2 + num3 ...` until `=`. The running
+    // `result` is still stored so left-to-right arithmetic is unchanged.
+    const expression = `${state.leftText ?? state.display} ${
+      OPERATOR_LABELS[state.operator]
+    } ${state.display}`
+
     return {
-      display: formatDisplay(result),
-      leftText: formatDisplay(result),
+      display: state.display,
+      leftText: expression,
       accumulator: result,
       operator,
       status: 'running',
